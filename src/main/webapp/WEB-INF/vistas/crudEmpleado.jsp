@@ -29,6 +29,7 @@
 							<button type="button" class="btn btn-primary" id="id_btn_filtrar" style="width: 150px">FILTRA</button>
 						</div>
 						<div class="col-md-2">
+                 <!-- 		ABRE EL MODAL DEL REGISTRAR -->
 							<button type="button" data-toggle='modal'  data-target="#id_div_modal_registra"  class='btn btn-success' style="width: 150px">REGISTRA</button>
 						</div>
 					</div>
@@ -39,13 +40,15 @@
 									<table id="id_table" class="table table-striped table-bordered" >
 										<thead>
 											<tr>
+										<!-- 	MOSTRANDO LOS DATOS QUE QUEREMOS -->
 												<th style="width: 5%" >ID</th>
 												<th style="width: 22%">Nombre</th>
 												<th style="width: 23%">Apellidos</th>
 												<th style="width: 15%">FechaNacimiento/th>
 												<th style="width: 15%">Pais</th>
-												<th style="width: 10%">Actualiza</th>
-												<th style="width: 10%">Elimina</th>
+<!-- 												//BOTONES CON EVENTOS  -->
+												<th style="width: 10%">Actualiza</th> <!--MODAL ACTUALIZA -->
+												<th style="width: 10%">Elimina</th> <!-- ESTADO -->
 											</tr>
 										</thead>
 											<tbody>
@@ -62,7 +65,7 @@
   
   
   
-  
+<!--   MODAL REGISTRAR  -->
   <div class="modal fade" id="id_div_modal_registra" >
 			<div class="modal-dialog" style="width: 60%">
 		
@@ -138,8 +141,10 @@
 
 
 
+// COMBO PARA CARGAR EL COMBO AL INCIAR
 $.getJSON("listaPais", {}, function(data){
 	$.each(data, function(i,item){
+		//id del modal                           atributos clase guia =
 		$("#id_reg_pais").append("<option value="+item.idPais +">"+ item.nombre +"</option>");
 		
 	});
@@ -147,8 +152,11 @@ $.getJSON("listaPais", {}, function(data){
 
 
 
+
+//METODO PARA BUSCAR Y LISTAR 
 $("#id_btn_filtrar").click(function(){
-	var fil=$("#id_txt_filtro").val();
+	var fil=$("#id_txt_filtro").val(); //el id del input 
+	//url del controller , "filtro" igual en el contrller el parametro
 	$.getJSON("ConsultaCrudEmpleado",{"filtro":fil}, function (lista){
 		agregarGrilla(lista);
 	});
@@ -158,21 +166,23 @@ $("#id_btn_filtrar").click(function(){
 
 
 
-
+//METODO REGISTRA 
+//el id del boton modal registra
 $("#id_btn_registra").click(function(){
+	//VALIDATOR
 	var validator = $('#id_form_registra').data('bootstrapValidator');
     validator.validate();
 	
     if (validator.isValid()) {
         $.ajax({
           type: "POST",
-          url: "registraCrudEmpleado", 
-          data: $('#id_form_registra').serialize(),
+          url: "registraCrudEmpleado", //url del controller
+          data: $('#id_form_registra').serialize(), //id del formulario envia todo
           success: function(data){
-        	  agregarGrilla(data.lista);
-        	  $('#id_div_modal_registra').modal("hide");
-        	  mostrarMensaje(data.mensaje);
-        	  limpiarFormulario();
+        	  agregarGrilla(data.lista); //lista de la variable map = al controller
+        	  $('#id_div_modal_registra').modal("hide"); //esconde el modal
+        	  mostrarMensaje(data.mensaje);//mustra mensaje , mensaje es la variable map = al controller 
+        	  limpiarFormulario(); //limpia el formulario
         	  validator.resetForm();
           },
           error: function(){
@@ -183,6 +193,12 @@ $("#id_btn_registra").click(function(){
     }
 });
 
+
+
+
+
+
+//METODO PARA LIMPIAR EL FORMULARIO
 
 function limpiarFormulario(){	
 	$('#id_reg_nombres').val('');
@@ -195,12 +211,12 @@ function limpiarFormulario(){
 
 
 
-
+//METODO PARA CAMBIAR EL ESTADO 
 function accionEliminar(id){	
     $.ajax({
           type: "POST",
-          url: "eliminaCrudEmpleado", 
-          data: {"id":id},
+          url: "eliminaCrudEmpleado",  //URL DEL CONTROLADOR 
+          data: {"id":id}, //"id" : parametro del controller 
           success: function(data){
         	  agregarGrilla(data.lista);
           },
@@ -212,6 +228,7 @@ function accionEliminar(id){
 
 
 
+//METODO PARA AGREGAR A LA TABLA
 function agregarGrilla(lista){
 	 $('#id_table').DataTable().clear();
 	 $('#id_table').DataTable().destroy();
@@ -223,16 +240,20 @@ function agregarGrilla(lista){
 			pageLength: 5,
 			lengthChange: false,
 			columns:[
+				//ATRUBUTOS = A LA CLASE GUIA , solo queremos de toda esa data de la bd alugnos ,  segun la tabla arriba y su espacio
 				{data: "idEmpleado"},
 				{data: "nombres"},
 				{data: "apellidos"},
 				{data: "fechaNacimiento"},
+				//queremos mostrar el nombre saldra segun el id , esto mostrara en la tabla
 				{data: "pais.nombre"},
+				//METODO PARA EDITAR 
 				{data: function(row, type, val, meta){
 					var salida='<button type="button" style="width: 90px" class="btn btn-info btn-sm" onclick="editar(\''+row.idEmpleado + '\',\'' + row.nombres +'\',\'' + row.apellidos  +'\',\'' + row.fechaNacimiento + '\',\''  + row.pais.idPais + '\')">Editar</button>';
 					return salida;
 				},className:'text-center'},	
-				{data: function(row, type, val, meta){
+				//METODO PARA ELIMINAR O CAMBIAR EL ESTADO
+				{data: function(row, type, val, meta){                                                                                                           //DEL ID MUESTRA ACTIVO O INACTIVO               
 				    var salida='<button type="button" style="width: 90px" class="btn btn-warning btn-sm" onclick="accionEliminar(\'' + row.idEmpleado + '\')">'+ (row.estado == 1? 'Activo':'Inactivo') +  '</button>';
 					return salida;
 				},className:'text-center'},													
@@ -248,8 +269,8 @@ function agregarGrilla(lista){
 
 
 
-
-
+//VALIDACIONES PARA EL MODAL REGISTRA
+//el id del moodal registra su form
 $('#id_form_registra').bootstrapValidator({
     message: 'This value is not valid',
     feedbackIcons: {
@@ -258,8 +279,9 @@ $('#id_form_registra').bootstrapValidator({
         validating: 'glyphicon glyphicon-refresh'
     },
     fields: {
+    	//los names de los inputs = a clase guia y a ala bd
     	"nombres": {
-    		selector : '#id_reg_nombres',
+    		selector : '#id_reg_nombres', //id de los inputs
             validators: {
                 notEmpty: {
                     message: 'El nombre es un campo obligatorio'
@@ -291,16 +313,17 @@ $('#id_form_registra').bootstrapValidator({
             	notEmpty: {
                     message: 'la fecha es un campo obligatorio'
                 },
+                //ACA BUSCAREMOS Q EL EMPLEADO SEA MAYOR DE EDAD
                 remote:{
                 	delay:1000,
-                	url:	'buscaEmpleadoMayorEdad',
-                	message:	'el empleado debe ser mayor de edad'
+                	url:	'buscaEmpleadoMayorEdad', //URL DE CONTROLLER
+                	message:	'el empleado debe ser mayor de edad' //mensaje en caso se cumpla
                 	
                 	
                 }
             }
         },
-     
+        //esto para enviar al la bd
         "pais.idPais": {
     		selector : '#id_reg_pais',
             validators: {
